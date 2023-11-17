@@ -10,7 +10,7 @@ CFG = {
     "train": {
         "seed": 42,
         "batch_size": 16,
-        "epoch": 10,
+        "epoch": 50,
         "train_portion": 0.7,
         "val_portion": 0.2,
         "lr": 1e-4

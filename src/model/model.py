@@ -34,15 +34,15 @@ class LSTM(BaseModel, ABC):
         self.logger.info(config)
 
     def load_data(self) -> None:
-        data = DataLoader(self.config).load_data(inference=False)
+        data = DataLoader(self.config).load_data()
         self.train_data, self.val_data = data['train'], data['val']
 
     def build(self) -> None:
         self.model = Network(self.config)
+        self.model.to(self.device)
 
     def train(self) -> None:
         best_loss = 100.
-        self.model.to(self.device)
         self.logger.info(self.model)
         self.model.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.train.lr)
 
@@ -68,9 +68,9 @@ class LSTM(BaseModel, ABC):
             self.model.train()
             for step, batch in enumerate(train_dataloader):
                 x, y = batch[0].to(self.device), batch[1].to(self.device)
+                self.model.optimizer.zero_grad()
                 output = self.model(x)
                 loss = self.criterion(output, y)
-                self.model.optimizer.zero_grad()
                 loss.backward()
                 self.model.optimizer.step()
                 train_loss_tmp += loss.item()
@@ -128,7 +128,8 @@ class LSTM(BaseModel, ABC):
         for parameter in script_model.parameters():
             parameter.requires_grad = False
         script_model.eval()
-        traced_model = torch.jit.trace(script_model, torch.rand(1, 1024, 7))
+        traced_model = torch.jit.trace(script_model,
+                                       torch.rand(1, 1, self.config.model.input_size))
         traced_model.save(jit_model_path)
 
         loss = np.column_stack((self.train_loss, self.val_loss))

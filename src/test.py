@@ -9,8 +9,7 @@ from sklearn import metrics
 
 from config.config import CFG
 from dataloader.custom_dataset import CustomDataset
-from dataloader.dataloader import DataLoader, label_classes
-from model.network import Network
+from dataloader.dataloader import DataLoader
 from utils.config import Config
 from utils.util import plot_matrix, plot_auc
 
@@ -41,7 +40,8 @@ def test(folder) -> None:
     model.to(device)
     logger.info(model)
 
-    test_data = DataLoader(config).load_data(inference=True)['test']
+    data_loader = DataLoader(config)
+    test_data = data_loader.load_data()['test']
     logger.info(f'Length of test_data: {len(test_data)}')
     test_dataloader = torch.utils.data.DataLoader(
         CustomDataset(config, test_data),
@@ -60,7 +60,7 @@ def test(folder) -> None:
     with open(os.path.join(folder, 'test_result.txt'), 'w') as f:
         f.writelines('\n'.join(str(line) for line in y_pred))
 
-    classes = label_classes(config)
+    classes = data_loader.label_classes()
     matrix = metrics.confusion_matrix(y_true, y_pred, labels=classes.argsort())
 
     np.savetxt(os.path.join(folder, 'confusion_matrix.txt'), matrix, fmt='%d', delimiter=',')

@@ -8,9 +8,8 @@ from torch.utils.data import Dataset
 class CustomDataset(Dataset):
     def __init__(self, config, data):
         self.config = config
-        self.data = data
-        self.files = self.data['files']
-        self.labels = self.data['labels']
+        self.files = data['files']
+        self.labels = data['labels']
 
     def __len__(self):
         return len(self.files)

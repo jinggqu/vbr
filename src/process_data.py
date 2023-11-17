@@ -26,7 +26,7 @@ def split_data():
 
     for batch_id, group in data.groupby('batchnum'):
         print(f'{i} / {row_count}', end='\r')
-        # Get same batch id data and save them to single csv file
+        # Get same batch id data and save them to a single csv file
         group.to_csv(os.path.join(root_dir, config.data.raw_folder, f'{batch_id}.csv'), index=False)
         i += 1
 
@@ -42,11 +42,11 @@ def preprocess():
     classes = set([])
 
     # Need to be kept column list and type:
-    # 'ts'(only keep time), 'longitude', 'latitude', 'course', 'speed', 'fusiontype'(2 or 11 or 1 or 13),
+    # 'ts', 'longitude', 'latitude', 'course', 'speed', 'fusiontype'(2 or 11 or 1 or 13),
 
     i, count = 1, len(files)
     for file in files:
-        # load data
+        # Load data
         print(f'{i} / {count}', end='\r')
         df = pd.read_csv(os.path.join(root_dir, 'data', 'raw', file))
 
