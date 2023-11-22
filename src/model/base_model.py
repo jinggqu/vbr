@@ -20,7 +20,7 @@ class BaseModel(ABC):
         torch.manual_seed(self.config.train.seed)
         self.device = torch.device('cpu')
         if torch.cuda.is_available():
-            self.device = torch.device('cuda 0')
+            self.device = torch.device('cuda')
             torch.cuda.manual_seed(self.config.train.seed)
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False

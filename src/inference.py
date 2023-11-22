@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import json
 import logging
 import os.path
 
@@ -18,9 +19,9 @@ def inference(folder, inference_data) -> None:
     folder = os.path.join(config.root_dir, 'saved', folder)
     logging.basicConfig(filename=os.path.join(folder, 'inference.log'), level=logging.INFO)
     logger = logging.getLogger(__name__)
-    logger.info('===> Inference started.')
     logger.info(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    logger.info(CFG)
+    logger.info('config = \n{}'.format(json.dumps(CFG, indent=4)))
+    logger.info('===> Inference started.')
 
     # fix random seeds for reproducibility
     np.random.seed(config.train.seed)
@@ -35,7 +36,7 @@ def inference(folder, inference_data) -> None:
     model = torch.load(os.path.join(folder, 'best_model.pth'))
     model.to(device)
     logger.info(model)
-    logger.info('Length of inference_sequence: {}'.format(len(inference_data)))
+    logger.info('Length of inference sequence: {}'.format(len(inference_data)))
 
     model.eval()
     with torch.no_grad():

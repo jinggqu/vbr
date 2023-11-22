@@ -21,16 +21,16 @@ def split_data():
     # 'starttime', 'batchnum'(unique id), 'tracetype'(always 0 or 1)
 
     # Load data and group by batchnum
-    data = pd.read_csv(raw_data_dir)
+    data = pd.read_csv(os.path.join(root_dir, raw_data_dir))
     i, row_count = 0, data['batchnum'].unique().shape[0]
 
     for batch_id, group in data.groupby('batchnum'):
-        print(f'{i} / {row_count}', end='\r')
+        print(f'Complete {i} / {row_count}', end='\r')
         # Get same batch id data and save them to a single csv file
         group.to_csv(os.path.join(root_dir, config.data.raw_folder, f'{batch_id}.csv'), index=False)
         i += 1
 
-    print("\ndone.", end=None)
+    print("\nRaw data splitting completed.", end=None)
 
 
 def preprocess():
@@ -47,7 +47,7 @@ def preprocess():
     i, count = 1, len(files)
     for file in files:
         # Load data
-        print(f'{i} / {count}', end='\r')
+        print(f'Preprocessed {i} / {count}', end='\r')
         df = pd.read_csv(os.path.join(root_dir, 'data', 'raw', file))
 
         # Labels and classes
@@ -82,9 +82,9 @@ def preprocess():
     with open(os.path.join(root_dir, config.data.proc_folder, 'label_classes.txt'), 'wb') as f:
         np.savetxt(f, list(classes), fmt='%d')
 
-    print("\ndone.")
+    print("\nData preprocessing completed.")
 
 
 if __name__ == '__main__':
-    # split_data()
+    split_data()
     preprocess()

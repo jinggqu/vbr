@@ -4,7 +4,7 @@ import seaborn as sns
 
 def plot_matrix(matrix, classes, x_label, y_label, save_to, ticks_rotation=45, show=False):
     fig, ax = plt.subplots(1, 1)
-    sns.heatmap(matrix, annot=True, cmap='crest')
+    sns.heatmap(matrix, annot=True, cmap='crest', fmt='d')
     classes_indexes = classes.argsort()
     classes_labels = classes.tolist()
     ax.set_xticks(classes_indexes + 0.5)
@@ -19,13 +19,13 @@ def plot_matrix(matrix, classes, x_label, y_label, save_to, ticks_rotation=45, s
         plt.show()
 
 
-def plot_auc(fpr, tpr, save_to, ticks_rotation=45, show=False):
+def plot_roc(fpr, tpr, save_to, ticks_rotation=45, show=False):
     fig, ax = plt.subplots(1, 1)
-    ax.title('Receiver Operating Characteristic')
+    ax.set_title('Receiver Operating Characteristic')
     ax.plot(fpr, tpr, label='AUC = %.2f')
     ax.set_xlabel('False Positive Rate')
     ax.set_ylabel('True Positive Rate')
     plt.tight_layout()
-    plt.savefig(save_to, bbox_inches='tight', pad_inches=0.5)
+    plt.savefig(save_to, bbox_inches='tight', pad_inches=0.5, dpi=600)
     if show:
         plt.show()
