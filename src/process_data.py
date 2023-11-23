@@ -13,24 +13,29 @@ config = Config.from_json(CFG)
 
 def split_data():
     root_dir = config.root_dir
-    raw_data_dir = config.data.raw_data
+    raw_data_dir_list = config.data.raw_data_list
 
     # Raw data column list:
     # 'ts', 'longitude', 'latitude', 'tgtheight'(always 0), 'course', 'speed', 'fusiontype'(2 or 11 or 1 or 13), 
     # 'srcmmsi', 'isconnecting'(always 0), 'connecttgttype'(always 0), 'withinborder'(always 0 or 1), 
     # 'starttime', 'batchnum'(unique id), 'tracetype'(always 0 or 1)
 
-    # Load data and group by batchnum
-    data = pd.read_csv(os.path.join(root_dir, raw_data_dir))
-    i, row_count = 0, data['batchnum'].unique().shape[0]
+    print('Raw data splitting started.')
 
-    for batch_id, group in data.groupby('batchnum'):
-        print(f'Complete {i} / {row_count}', end='\r')
-        # Get same batch id data and save them to a single csv file
-        group.to_csv(os.path.join(root_dir, config.data.raw_folder, f'{batch_id}.csv'), index=False)
-        i += 1
+    for raw_data_dir in raw_data_dir_list:
+        print(f'\nSplitting raw data file: {raw_data_dir}')
 
-    print("\nRaw data splitting completed.", end=None)
+        # Load data and group by batchnum
+        data = pd.read_csv(os.path.join(root_dir, raw_data_dir))
+        i, row_count = 0, data['batchnum'].unique().shape[0]
+
+        for batch_id, group in data.groupby('batchnum'):
+            print(f'Splitted {i} / {row_count}', end='\r')
+            # Get same batch id data and save them to a single csv file
+            group.to_csv(os.path.join(root_dir, config.data.raw_folder, f'{batch_id}.csv'), index=False)
+            i += 1
+
+    print('\nRaw data splitting completed.')
 
 
 def preprocess():
@@ -42,7 +47,9 @@ def preprocess():
     classes = set([])
 
     # Need to be kept column list and type:
-    # 'ts', 'longitude', 'latitude', 'course', 'speed', 'fusiontype'(2 or 11 or 1 or 13),
+    # 'ts', 'longitude', 'latitude', 'course', 'speed', 'fusiontype'(2 or 11 or 1 or 13), withinborder
+
+    print('\nData preprocessing started.')
 
     i, count = 1, len(files)
     for file in files:
@@ -55,8 +62,9 @@ def preprocess():
         classes.add(df['tracetype'][0])
 
         # Drop useless columns
-        df.drop(['tgtheight', 'srcmmsi', 'isconnecting', 'connecttgttype', 'withinborder',
-                 'starttime', 'batchnum', 'tracetype'], axis=1, inplace=True)
+        df.drop(labels=['tgtheight', 'course', 'srcmmsi', 'isconnecting',
+                        'connecttgttype', 'starttime', 'batchnum', 'tracetype'],
+                axis=1, inplace=True)
 
         # Split datetime to day of the year and second of the day, then normalize them
         df_time = pd.to_datetime(df['ts'])
@@ -67,7 +75,6 @@ def preprocess():
         # Normalize other variables
         df['longitude'] = df['longitude'] / 180.  # West to East (-180° to 180°)
         df['latitude'] = df['latitude'] / 90.  # South to North (-90° to 90°)
-        df['course'] = df['course'] / 360.  # Direction (0° to 360°)
         df['speed'] = df['speed'] / 80.  # Knots (0 to 80)
         df['fusiontype'] = df['fusiontype'].map({1: 0, 2: 1, 11: 2, 13: 3}) / 3.
 
@@ -82,7 +89,7 @@ def preprocess():
     with open(os.path.join(root_dir, config.data.proc_folder, 'label_classes.txt'), 'wb') as f:
         np.savetxt(f, list(classes), fmt='%d')
 
-    print("\nData preprocessing completed.")
+    print('\nData preprocessing completed.')
 
 
 if __name__ == '__main__':

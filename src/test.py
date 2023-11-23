@@ -25,7 +25,7 @@ def test(folder) -> None:
     logger = logging.getLogger(__name__)
     logger.info(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     logger.info('config = \n{}'.format(json.dumps(CFG, indent=4)))
-    logger.info('===> Testing started.')
+    logger.info('Testing started.')
 
     # fix random seeds for reproducibility
     np.random.seed(config.train.seed)
@@ -58,11 +58,22 @@ def test(folder) -> None:
             x, y = batch[0].to(device), batch[1].to(device)
             y_true += y.tolist()
             output = model(x)
-            prediction = torch.argmax(output, dim=1)
-            y_pred += prediction.tolist()
+            y_pred += torch.argmax(output, dim=1).tolist()
 
     with open(os.path.join(folder, 'test_result.txt'), 'w') as f:
         f.writelines('\n'.join(str(line) for line in y_pred))
+
+    # Save wrong prediction files' name
+    msg_list = []
+    with open(os.path.join(folder, 'test_wrong_files.txt'), 'w') as f:
+        for i in range(len(y_true)):
+            if y_pred[i] == 1 and y_true[i] == 0:
+                msg_list.append(f'FP (False Positive): {test_dataloader.dataset.files[i]}, \t'
+                                f'true label: 0, predicted label: 1\n')
+            elif y_pred[i] == 0 and y_true[i] == 1:
+                msg_list.append(f'FN (False Negative): {test_dataloader.dataset.files[i]}, \t'
+                                f'true label: 1, predicted label: 0\n')
+        f.writelines(msg_list)
 
     classes = data_loader.label_classes()
     matrix = metrics.confusion_matrix(y_true, y_pred, labels=classes.argsort())
@@ -79,7 +90,7 @@ def test(folder) -> None:
                     'precision:\t' + str(metrics.precision_score(y_true, y_pred, average=average)),
                     'recall: \t' + str(metrics.recall_score(y_true, y_pred, average=average)),
                     'f1_score:\t' + str(metrics.f1_score(y_true, y_pred, average=average)),
-                    'auc:\t' + str(metrics.roc_auc_score(y_true, y_pred, average=average))]
+                    'auc:\t\t' + str(metrics.roc_auc_score(y_true, y_pred, average=average))]
 
     with open(os.path.join(folder, 'test_metrics.txt'), 'w') as f:
         f.writelines('\n'.join(test_metrics))
@@ -87,7 +98,7 @@ def test(folder) -> None:
     fpr, tpr, _ = metrics.roc_curve(y_true, y_pred)
     plot_roc(fpr=fpr, tpr=tpr, save_to=os.path.join(folder, 'roc_curve.png'), ticks_rotation=0, show=False)
 
-    logger.info('===> Testing finished.')
+    logger.info('Testing finished.')
 
 
 if __name__ == '__main__':

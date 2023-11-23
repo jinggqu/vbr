@@ -2,7 +2,7 @@ import argparse
 import datetime
 import json
 import logging
-import os.path
+import os
 
 import numpy as np
 import torch
@@ -21,7 +21,7 @@ def inference(folder, inference_data) -> None:
     logger = logging.getLogger(__name__)
     logger.info(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     logger.info('config = \n{}'.format(json.dumps(CFG, indent=4)))
-    logger.info('===> Inference started.')
+    logger.info('Inference started.')
 
     # fix random seeds for reproducibility
     np.random.seed(config.train.seed)
@@ -47,10 +47,12 @@ def inference(folder, inference_data) -> None:
 
     with open(os.path.join(folder, 'inference_result.txt'), 'w') as f:
         f.writelines('index, result\n')
+        msg_list = []
         for i, line in enumerate(result):
-            f.writelines(f'{i}, {line}\n')
+            msg_list.append(f'{i}, {line}\n')
+        f.writelines(msg_list)
 
-    logger.info('===> Inference finished.')
+    logger.info('Inference finished.')
 
 
 if __name__ == '__main__':
