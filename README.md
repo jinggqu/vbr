@@ -1194,7 +1194,7 @@ curl -H "Content-Type: application/json" --data @data.json http://127.0.0.1:8080
 
 使用 `torchserve --stop` 即可停止服务，或执行 `stop.sh` 脚本停止服务，脚本内容如下。在执行前请先为脚本赋予执行权限，并按照实际情况修改脚本中的 Conda 环境信息。
 
-```json
+```shell
 source /root/anaconda3/bin/activate torchserve
 torchserve --stop
 ```
